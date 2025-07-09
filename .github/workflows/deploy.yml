@@ -27,4 +27,4 @@ jobs:
           rm auth.txt
 
       - name: Deploy Metadata
-        run: sf project deploy start --manifest manifest/package/package.xml --ignore-conflicts --force
+        run: sf project deploy start --manifest manifest/package/package.xml --ignore-conflicts
