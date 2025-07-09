@@ -13,11 +13,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Salesforce CLI (sfdx)
-        run: npm install -g sfdx-cli
+      # ✅ Install the modern Salesforce CLI (sf)
+      - name: Install Salesforce CLI
+        uses: salesforcecli/sfdx-github-action@v1
 
+      # ✅ Authenticate using SFDX Auth URL
       - name: Authenticate to Salesforce
-        run: echo "${{ secrets.SFDX_AUTH_URL }}" | sfdx auth:sfdxurl:store --sfdxurlstdin --setalias my-org --setdefaultusername
+        run: echo "${{ secrets.SFDX_AUTH_URL }}" | sf org login sfdx-url --sfdx-url-stdin --alias my-org --set-default
 
+      # ✅ Deploy metadata using manifest
       - name: Deploy Metadata
-        run: sfdx force:source:deploy -x manifest/package.xml
+        run: sf project deploy start --manifest manifest/package.xml
