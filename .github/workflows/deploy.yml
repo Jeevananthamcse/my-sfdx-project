@@ -10,20 +10,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ✅ Step 1: Checkout the code
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # ✅ Step 2: Install the Salesforce CLI
       - name: Install Salesforce CLI
         run: |
           npm install --global @salesforce/cli
           sf --version
 
+      # ✅ Step 3: Authenticate to Salesforce using SFDX Auth URL
       - name: Authenticate to Salesforce
         shell: bash
         run: |
           echo "${{ secrets.SFDX_AUTH_URL }}" > auth.txt
           sf org login sfdx-url --sfdx-url-file auth.txt --alias my-org --set-default
-          rm auth.txt  # Optional: delete file after use
+          rm auth.txt
 
+      # ✅ Step 4: Deploy metadata using manifest/package.xml
       - name: Deploy Metadata
         run: sf project deploy start --manifest manifest/package.xml
