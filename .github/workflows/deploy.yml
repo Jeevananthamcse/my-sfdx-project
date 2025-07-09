@@ -14,9 +14,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Needed for full git history to compare diffs
 
-      - name: Install Salesforce CLI (sf + sfdx)
+      - name: Install Salesforce CLI
         run: |
           npm install --global @salesforce/cli
           sf --version
@@ -34,13 +34,14 @@ jobs:
       - name: Generate delta using sgd
         run: |
           sfdx sgd:source:delta \
-            --to "${{ github.ref_name }}" \
-            --from main \
+            --to "${{ github.sha }}" \
+            --from origin/main \
             --output manifest
 
       - name: Deploy delta metadata
         run: |
           if [ -f manifest/package/package.xml ]; then
+            echo "Deploying changed metadata..."
             sf project deploy start \
               --manifest manifest/package/package.xml \
               --wait 10
@@ -50,11 +51,15 @@ jobs:
 
       - name: Deploy destructive changes (if any)
         run: |
-          # Only run if there are actual <members> entries to delete
-          if grep -q '<members>' manifest/destructiveChanges/destructiveChanges.xml 2>/dev/null; then
-            sf project deploy start \
-              --manifest manifest/destructiveChanges/destructiveChanges.xml \
-              --wait 10
+          if [ -f manifest/destructiveChanges/destructiveChanges.xml ]; then
+            if grep -q '<members>' manifest/destructiveChanges/destructiveChanges.xml; then
+              echo "Deploying destructive changes..."
+              sf project deploy start \
+                --manifest manifest/destructiveChanges/destructiveChanges.xml \
+                --wait 10
+            else
+              echo "Destructive changes file exists but has no members to delete."
+            fi
           else
-            echo "No destructive changes to deploy"
+            echo "No destructive changes file found."
           fi
