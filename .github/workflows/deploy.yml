@@ -33,10 +33,7 @@ jobs:
 
       - name: Generate delta using sgd
         run: |
-          sfdx sgd:source:delta \
-            --to "${{ github.ref_name }}" \
-            --from main \
-            --output manifest
+          sfdx sgd:source:delta --to "${{ github.ref_name }}" --from main --output manifest
 
       - name: Deploy delta metadata
         run: |
@@ -50,8 +47,7 @@ jobs:
 
       - name: Deploy destructive changes (if any)
         run: |
-          # Only deploy if the destructiveChanges.xml actually contains <members>
-          if grep -q '<members>' manifest/destructiveChanges/destructiveChanges.xml 2>/dev/null; then
+          if [ -f manifest/destructiveChanges/destructiveChanges.xml ]; then
             sf project deploy start \
               --manifest manifest/destructiveChanges/destructiveChanges.xml \
               --wait 10
