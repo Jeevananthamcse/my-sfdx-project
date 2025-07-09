@@ -15,28 +15,34 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Salesforce CLI (sfdx)
+      - name: Install Salesforce CLI
         run: |
-          npm install --global sfdx-cli
-          sfdx --version
+          npm install --global @salesforce/cli
+          sf --version
 
       - name: Install sfdx-git-delta plugin
-        run: sfdx plugins:install sfdx-git-delta
+        run: |
+          echo y \| sf plugins install sfdx-git-delta
 
       - name: Authenticate to Salesforce
         run: |
           echo "${{ secrets.SFDX_AUTH_URL }}" > auth.txt
-          sfdx auth:sfdxurl:store --sfdxurlfile auth.txt --setdefaultusername --setalias my-org
+          sf org login sfdx-url --sfdx-url-file auth.txt --alias my-org --set-default
           rm auth.txt
 
       - name: Generate delta using sgd
         run: |
-          sfdx sgd:source:delta --to main --from HEAD~1 --output manifest
+          sf sgd source delta \
+            --to main \
+            --from HEAD~1 \
+            --output-dir manifest
 
       - name: Deploy delta metadata
         run: |
           if [ -f manifest/package/package.xml ]; then
-            sfdx force:source:deploy -x manifest/package/package.xml --wait 10
+            sf project deploy start \
+              --manifest manifest/package/package.xml \
+              --wait 10
           else
             echo "No metadata changes to deploy"
           fi
@@ -44,7 +50,9 @@ jobs:
       - name: Deploy destructive changes (if any)
         run: |
           if [ -f manifest/destructiveChanges/destructiveChanges.xml ]; then
-            sfdx force:source:deploy -x manifest/destructiveChanges/destructiveChanges.xml --wait 10
+            sf project deploy start \
+              --manifest manifest/destructiveChanges/destructiveChanges.xml \
+              --wait 10
           else
             echo "No destructive changes to deploy"
           fi
