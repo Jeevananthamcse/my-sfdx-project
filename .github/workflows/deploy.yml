@@ -3,6 +3,7 @@ name: Delta Deploy to Salesforce
 on:
   push:
     branches:
+      - main
       - feature/**
 
 jobs:
@@ -38,7 +39,7 @@ jobs:
       - name: Generate delta using sgd
         run: |
           mkdir -p manifest/package
-          sfdx sgd:source:delta --to ${{ github.ref_name }} --from main --output manifest
+          sfdx sgd:source:delta --to main --from HEAD~1 --output manifest
 
       - name: Deploy delta to Salesforce
         run: |
