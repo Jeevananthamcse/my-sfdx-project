@@ -36,7 +36,7 @@ jobs:
       - name: Deploy delta metadata
         run: |
           if [ -f "manifest/package/package.xml" ]; then
-            sfdx force:source:deploy -x manifest/package/package.xml --wait 10 --ignore-conflicts
+            sfdx force:source:deploy -x manifest/package/package.xml --wait 10 
           else
             echo "No metadata changes to deploy"
           fi
