@@ -15,10 +15,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Salesforce CLI
+      - name: Install Salesforce CLI (sfdx)
         run: |
-          npm install --global @salesforce/cli
-          sf --version
+          npm install --global sfdx-cli
           sfdx --version
 
       - name: Install sfdx-git-delta plugin
@@ -27,7 +26,7 @@ jobs:
       - name: Authenticate to Salesforce
         run: |
           echo "${{ secrets.SFDX_AUTH_URL }}" > auth.txt
-          sf org login sfdx-url --sfdx-url-file auth.txt --alias my-org --set-default
+          sfdx auth:sfdxurl:store --sfdxurlfile auth.txt --setdefaultusername --setalias my-org
           rm auth.txt
 
       - name: Generate delta using sgd
@@ -36,16 +35,16 @@ jobs:
 
       - name: Deploy delta metadata
         run: |
-          if [ -f "manifest/package/package.xml" ]; then
-            sf project deploy start --manifest manifest/package/package.xml --wait 10
+          if [ -f manifest/package/package.xml ]; then
+            sfdx force:source:deploy -x manifest/package/package.xml --wait 10
           else
             echo "No metadata changes to deploy"
           fi
 
       - name: Deploy destructive changes (if any)
         run: |
-          if [ -f "manifest/destructiveChanges/destructiveChanges.xml" ]; then
-            sf project deploy start --manifest manifest/destructiveChanges/destructiveChanges.xml --wait 10
+          if [ -f manifest/destructiveChanges/destructiveChanges.xml ]; then
+            sfdx force:source:deploy -x manifest/destructiveChanges/destructiveChanges.xml --wait 10
           else
             echo "No destructive changes to deploy"
           fi
