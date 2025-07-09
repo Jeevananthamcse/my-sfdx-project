@@ -7,6 +7,6 @@
 **/
 public class HelloDelta {
     public static void sayHi() {
-        System.debug('Hello from Delta Deploy!');
+        System.debug('Hi from Delta Deploy!');
     }
 }
