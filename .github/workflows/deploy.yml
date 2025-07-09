@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feature/**
 
 jobs:
   deploy:
@@ -14,52 +13,38 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Needed for full git history to compare diffs
+          fetch-depth: 0
 
-      - name: Install Salesforce CLI
+      - name: Install Salesforce CLI (sf)
         run: |
           npm install --global @salesforce/cli
           sf --version
+      - name: Install SFDX CLI (for Git-Delta)
+        run: |
+          npm install --global sfdx-cli --force
           sfdx --version
-
       - name: Install sfdx-git-delta plugin
-        run: sfdx plugins:install sfdx-git-delta --yes
-
+        run: |
+          sfdx plugins:install sfdx-git-delta --yes
       - name: Authenticate to Salesforce
         run: |
           echo "${{ secrets.SFDX_AUTH_URL }}" > auth.txt
           sf org login sfdx-url --sfdx-url-file auth.txt --alias my-org --set-default
           rm auth.txt
-
       - name: Generate delta using sgd
         run: |
-          sfdx sgd:source:delta \
-            --to "${{ github.sha }}" \
-            --from origin/main \
-            --output manifest
-
+          sfdx sgd:source:delta --to main --from HEAD~1 --output manifest
       - name: Deploy delta metadata
         run: |
           if [ -f manifest/package/package.xml ]; then
-            echo "Deploying changed metadata..."
-            sf project deploy start \
-              --manifest manifest/package/package.xml \
-              --wait 10
+            sf project deploy start --manifest manifest/package/package.xml --wait 10
           else
             echo "No metadata changes to deploy"
           fi
-
       - name: Deploy destructive changes (if any)
         run: |
           if [ -f manifest/destructiveChanges/destructiveChanges.xml ]; then
-            if grep -q '<members>' manifest/destructiveChanges/destructiveChanges.xml; then
-              echo "Deploying destructive changes..."
-              sf project deploy start \
-                --manifest manifest/destructiveChanges/destructiveChanges.xml \
-                --wait 10
-            else
-              echo "Destructive changes file exists but has no members to delete."
-            fi
+            sf project deploy start --manifest manifest/destructiveChanges/destructiveChanges.xml --wait 10
           else
-            echo "No destructive changes file found."
+            echo "No destructive changes to deploy"
           fi
