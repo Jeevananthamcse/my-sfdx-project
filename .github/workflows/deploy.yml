@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy to Salesforce
 
 on:
   push:
@@ -13,14 +13,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # ✅ Step 1: Install Salesforce CLI
-      - name: Install Salesforce CLI
-        run: npm install --global sfdx-cli
+      - name: Install Salesforce CLI (sfdx)
+        run: npm install -g sfdx-cli
 
-      # ✅ Step 2: Authenticate using your secret SFDX_AUTH_URL
       - name: Authenticate to Salesforce
-        run: echo ${{ secrets.SFDX_AUTH_URL }} | sf org login sfdx-url --sfdx-url-stdin --alias my-org --set-default
+        run: echo "${{ secrets.SFDX_AUTH_URL }}" | sfdx auth:sfdxurl:store --sfdxurlstdin --setalias my-org --setdefaultusername
 
-      # ✅ Step 3: Deploy Metadata
-      - name: Deploy metadata
-        run: sf project deploy start --manifest manifest/package/package.xml --target-org my-org
+      - name: Deploy Metadata
+        run: sfdx force:source:deploy -x manifest/package.xml
