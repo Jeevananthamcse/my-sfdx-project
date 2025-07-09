@@ -7,6 +7,6 @@
 **/
 public class HelloDelta {
     public static void sayHi() {
-        System.debug('automaticaly delta deploy to sf when code is pushed!');
+        System.debug('automaticaly  deploy to sf when code is pushed! and updated the changes only instead of pushing etrire repo');
     }
 }
