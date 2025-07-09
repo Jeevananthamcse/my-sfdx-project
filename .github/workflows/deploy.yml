@@ -15,10 +15,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Salesforce CLI (sf + sfdx)
+      - name: Install Salesforce CLI
         run: |
           npm install --global @salesforce/cli
-          npm install --global sfdx-cli
           sf --version
           sfdx --version
 
@@ -33,7 +32,7 @@ jobs:
 
       - name: Generate delta using sgd
         run: |
-          sf sgd:source:delta --to main --from HEAD~1 --output manifest
+          sfdx sgd:source:delta --to main --from HEAD~1 --output manifest
 
       - name: Deploy delta metadata
         run: |
