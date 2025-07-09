@@ -19,7 +19,11 @@ jobs:
           sf --version
 
       - name: Authenticate to Salesforce
-        run: echo "${{ secrets.SFDX_AUTH_URL }}" | sf org login sfdx-url --sfdx-url-stdin --alias my-org --set-default
+        shell: bash
+        run: |
+          echo "${{ secrets.SFDX_AUTH_URL }}" > auth.txt
+          sf org login sfdx-url --sfdx-url-file auth.txt --alias my-org --set-default
+          rm auth.txt  # Optional: delete file after use
 
       - name: Deploy Metadata
         run: sf project deploy start --manifest manifest/package.xml
