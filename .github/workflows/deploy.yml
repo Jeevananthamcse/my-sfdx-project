@@ -33,7 +33,7 @@ jobs:
       - name: Generate delta using sgd
         run: |
           mkdir -p manifest/package
-          sfdx sgd:source:delta --to main --from HEAD~1 --output manifest
+          sf sgd source delta --to feature/lwc-change --from main --output-dir manifest
 
       - name: Deploy delta to Salesforce
         run: |
