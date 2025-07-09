@@ -1,4 +1,4 @@
-name: Deploy to Salesforce
+name: Deploy
 
 on:
   push:
@@ -10,19 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Install Salesforce CLI
-        run: |
-          npm install @salesforce/cli --global
-          sf --version
+        run: npm install -g sfdx-cli
 
       - name: Authenticate to Salesforce
-        run: |
-          echo "${{ secrets.SFDX_AUTH_URL }}" > auth.txt
-          sf org login sfdx-url --sfdx-url-file auth.txt --alias dev-org --set-default
-          rm auth.txt
+        run: echo ${{ secrets.SFDX_AUTH_URL }} | sf org login sfdx-url --sfdx-url-stdin --alias my-org --set-default
 
-      - name: Deploy source
-        run: sf project deploy start --manifest manifest/package/package.xml --target-org dev-org
+      - name: Deploy to Salesforce
+        run: sf project deploy start --manifest manifest/package/package.xml --target-org my-org
